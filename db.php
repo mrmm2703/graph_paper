@@ -133,7 +133,6 @@ class DatabaseConnection {
     }
 
     public function insertNewUser($email, $password_hash, $first_name, $last_name, $dob) {
-        var_dump($dob);
         $stmt = $this->mysqli->prepare("INSERT INTO users (FirstName, LastName, EmailAddress, PasswordHash, DateOfBirth, Verified) VALUES (?, ?, ?, ?, ?, 1)");
         $stmt->bind_param("sssss", $first_name, $last_name, $email, $password_hash, $dob);
         $stmt->execute();
@@ -141,6 +140,19 @@ class DatabaseConnection {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public function getProjectsAndMaps($user_id) {
+        $stmt = $this->mysqli->prepare("SELECT maps.MapID, maps.ProjectID, maps.MapName, maps.LastModified as MapLastModified, maps.DateCreated as MapDateCreated, projects.ProjectName, projects.DateCreated as ProjectDateCreated, projects.LastModified as ProjectDateModified, projects.ShareLibrary FROM maps INNER JOIN projects ON maps.ProjectID=projects.ProjectID WHERE projects.OwnerID=?;");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            return $result->fetch_all(MYSQLI_ASSOC);
+        } else {
+            return 0;
         }
     }
 }

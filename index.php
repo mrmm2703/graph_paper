@@ -2,7 +2,7 @@
 
 session_start();
 
-if (isset($_SESSION["UserID"])) {
+if (isset($_SESSION["User"])) {
     header("Location: dashboard.php");
 }
 
