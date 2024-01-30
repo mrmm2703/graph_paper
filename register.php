@@ -47,6 +47,7 @@ if (isset($_POST["email"])) {
     </head>
     <body>
         <h1>Register</h1>
+        <form method="POST">
             <label for="firstname">First Name:</label>
             <input type="text" name="firstname" placeholder="First name"><br>
             <label for="lastname">Last Name:</label>
