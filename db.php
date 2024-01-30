@@ -143,6 +143,19 @@ class DatabaseConnection {
         }
     }
 
+    public function getProjectsByUserID($user_id) {
+        $stmt = $this->mysqli->prepare("SELECT ProjectName, ProjectID from projects WHERE OwnerID=?;");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            return $result->fetch_all(MYSQLI_ASSOC);
+        } else {
+            return 0;
+        }
+    }
+
     public function getProjectsAndMaps($user_id) {
         $stmt = $this->mysqli->prepare("SELECT maps.MapID, maps.ProjectID, maps.MapName, maps.LastModified as MapLastModified, maps.DateCreated as MapDateCreated, projects.ProjectName, projects.DateCreated as ProjectDateCreated, projects.LastModified as ProjectDateModified, projects.ShareLibrary FROM maps INNER JOIN projects ON maps.ProjectID=projects.ProjectID WHERE projects.OwnerID=?;");
         $stmt->bind_param("i", $user_id);
@@ -153,6 +166,26 @@ class DatabaseConnection {
             return $result->fetch_all(MYSQLI_ASSOC);
         } else {
             return 0;
+        }
+    }
+
+    public function getProjectCountByNameAndUserID($user_id, $project_name) {
+        $stmt = $this->mysqli->prepare("SELECT ProjectID from projects WHERE OwnerID=? AND ProjectName=?");
+        $stmt->bind_param("is", $user_id, $project_name);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        return $result->num_rows;
+    }
+
+    public function insertNewProject($user_id, $project_name) {
+        $stmt = $this->mysqli->prepare("INSERT INTO projects (OwnerID, ProjectName, ShareLibrary) VALUES (?, ?, 1)");
+        $stmt->bind_param("is", $user_id, $project_name);
+        $stmt->execute();
+        if ($stmt->affected_rows == 1) {
+            return true;
+        } else {
+            return false;
         }
     }
 }

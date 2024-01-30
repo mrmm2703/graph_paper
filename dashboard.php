@@ -15,19 +15,7 @@ $db_con = new DatabaseConnection();
 if ($db_con->connect()) {
 
     $projects_maps = $db_con->getProjectsAndMaps($_SESSION["User"]["UserID"]);
-    // if ($user == 0) {
-    //     echo "<br><br>User not found!";
-    // } else {
-    //     echo "<br><br>Found user!<br>";
-    //     echo $user["FirstName"];
-    //     if (password_verify($password, $user["PasswordHash"])) {
-    //         echo "<br><br>Successfully logged in!";
-    //         $_SESSION["User"] = $user;
-    //         header("Location: dashboard.php");
-    //     } else {
-    //         echo "<br><br>Incorrect password!";
-    //     }
-    // }
+    $projects_raw = $db_con->getProjectsByUserID($_SESSION["User"]["UserID"]);
 }
 
 ?>
@@ -43,23 +31,43 @@ if ($db_con->connect()) {
             if ($projects_maps == 0) {
                 echo "No projects found";
             } else {
+                $projects = array();
+                foreach ($projects_raw as $index => $row) {
+                    $projects[$row["ProjectID"]] = $row["ProjectName"];
+                }
+
                 $all_rows = array();
                 foreach ($projects_maps as $index => $row) {
-                    $all_rows[$row['ProjectName']][$index] = $row;
+                    $all_rows[$row['ProjectID']][$index] = $row;
                 }
-                // var_dump($all_rows);
 
-                // for each project
-                foreach ($all_rows as $project_name => $maps) {
+                // for each project 
+                foreach ($projects as $project_id => $project_name) {
                     echo "<h3>" . $project_name . "</h1>";
-                    echo "<ul>";
-                    foreach ($maps as $index => $map) {
-                        echo "<li>" . $map["MapName"] . "<br>Last modified: " . $map["MapLastModified"] . "</li>";
+                    if (isset($all_rows[$project_id])) {
+                        echo "<ul>";
+                        foreach ($all_rows[$project_id] as $map_proj_id => $map) {
+                            echo "<li>" . $map["MapName"] . "<br>Last modified: " . $map["MapLastModified"] . "</li>";
+                        }
+                        echo "</ul>";
+                    } else {
+                        echo "<ul><li>No maps</li></ul>";
                     }
-                    echo "</ul>";
                 }
+
+                // // for each project
+                // foreach ($all_rows as $project_name => $maps) {
+                //     echo "<h3>" . $project_name . "</h1>";
+                //     echo "<ul>";
+                //     foreach ($maps as $index => $map) {
+                //         echo "<li>" . $map["MapName"] . "<br>Last modified: " . $map["MapLastModified"] . "</li>";
+                //     }
+                //     echo "</ul>";
+                // }
             }
         ?>
+
+        <a href="new_project.php">New project</a>
         <a href="logout.php">Logout</a>
     </body>
 </html>
