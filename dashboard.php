@@ -43,7 +43,7 @@ if ($db_con->connect()) {
 
                 // for each project 
                 foreach ($projects as $project_id => $project_name) {
-                    echo "<h3>" . $project_name . "</h1>";
+                    echo "<a href='library.php?project_id=" . $project_id . "&project_name=" . $project_name . "'><h3>" . $project_name . "</h1></a>";
                     if (isset($all_rows[$project_id])) {
                         echo "<ul>";
                         foreach ($all_rows[$project_id] as $map_proj_id => $map) {

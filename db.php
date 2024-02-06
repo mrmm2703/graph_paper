@@ -157,7 +157,9 @@ class DatabaseConnection {
     }
 
     public function getProjectsAndMaps($user_id) {
-        $stmt = $this->mysqli->prepare("SELECT maps.MapID, maps.ProjectID, maps.MapName, maps.LastModified as MapLastModified, maps.DateCreated as MapDateCreated, projects.ProjectName, projects.DateCreated as ProjectDateCreated, projects.LastModified as ProjectDateModified, projects.ShareLibrary FROM maps INNER JOIN projects ON maps.ProjectID=projects.ProjectID WHERE projects.OwnerID=?;");
+        $stmt = $this->mysqli->prepare("SELECT maps.MapID, maps.ProjectID, maps.MapName, maps.LastModified as MapLastModified, maps.DateCreated as MapDateCreated, 
+        projects.ProjectName, projects.DateCreated as ProjectDateCreated, projects.LastModified as ProjectDateModified, projects.ShareLibrary 
+        FROM maps INNER JOIN projects ON maps.ProjectID=projects.ProjectID WHERE projects.OwnerID=?;");
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -182,6 +184,90 @@ class DatabaseConnection {
         $stmt = $this->mysqli->prepare("INSERT INTO projects (OwnerID, ProjectName, ShareLibrary) VALUES (?, ?, 1)");
         $stmt->bind_param("is", $user_id, $project_name);
         $stmt->execute();
+        if ($stmt->affected_rows == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function getLibraryItemsByProject($project_id) {
+        $stmt = $this->mysqli->prepare("SELECT library_items.LibraryItemID, (SELECT GROUP_CONCAT(authors.AuthorFirstName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsFirstName, 
+        (SELECT GROUP_CONCAT(authors.AuthorLastName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsLastName, YEAR(library_items.PublishedDate) AS PublishedYear, 
+        library_items.SourceTitle, websites.Publisher, library_items.DateCreated
+        FROM websites
+        INNER JOIN library_items
+        ON library_items.LibraryItemID=websites.LibraryItemID
+        INNER JOIN authors
+        ON authors.LibraryItemID=library_items.LibraryItemID
+        WHERE library_items.ProjectID=?
+        UNION
+        SELECT library_items.LibraryItemID, (SELECT GROUP_CONCAT(authors.AuthorFirstName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsFirstName, 
+        (SELECT GROUP_CONCAT(authors.AuthorLastName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsLastName, YEAR(library_items.PublishedDate) AS PublishedYear, 
+        library_items.SourceTitle, books.Publisher, library_items.DateCreated
+        FROM books
+        INNER JOIN library_items
+        ON library_items.LibraryItemID=books.LibraryItemID
+        INNER JOIN authors
+        ON authors.LibraryItemID=library_items.LibraryItemID
+        WHERE library_items.ProjectID=?
+        UNION
+        SELECT library_items.LibraryItemID, (SELECT GROUP_CONCAT(authors.AuthorFirstName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsFirstName, 
+        (SELECT GROUP_CONCAT(authors.AuthorLastName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsLastName, YEAR(library_items.PublishedDate) AS PublishedYear, 
+        library_items.SourceTitle, '', library_items.DateCreated
+        FROM journals
+        INNER JOIN library_items
+        ON library_items.LibraryItemID=journals.LibraryItemID
+        INNER JOIN authors
+        ON authors.LibraryItemID=library_items.LibraryItemID
+        WHERE library_items.ProjectID=?");
+        $stmt->bind_param("iii", $project_id, $project_id, $project_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            return $result->fetch_all(MYSQLI_ASSOC);
+        } else {
+            return 0;
+        }
+    }
+
+    public function insertNewBook($project_id, $title, $summary, $published_date, $publisher, $publisher_city, $isbn) {
+        $library_item_id = $this->insertNewLibraryItem($project_id, $title, $summary, $published_date);
+        if ($library_item_id == false) {
+            return false;
+        }
+        $stmt = $this->mysqli->prepare("INSERT INTO books (LibraryItemID, Publisher, PublisherCity, ISBN)
+        VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $library_item_id, $publisher, $publisher_city, $isbn);
+        $stmt->execute();
+        
+        if ($stmt->affected_rows == 1) {
+            return $library_item_id;
+        } else {
+            return false;
+        }
+    }
+
+    private function insertNewLibraryItem($project_id, $title, $summary, $published_date) {
+        $stmt = $this->mysqli->prepare("INSERT INTO library_items (ProjectID, SourceTitle, PublishedDate, Summary, DateCreated)
+        VALUES (?, ?, ?, ?, CURRENT_DATE)");
+        $stmt->bind_param("isss", $project_id, $title, $published_date, $summary);
+        $stmt->execute();
+
+        if ($stmt->affected_rows == 1) {
+            return $this->mysqli->insert_id;
+        } else {
+            return false;
+        }
+    }
+
+    public function insertNewAuthor($library_item_id, $first_name, $middle_name, $last_name) {
+        $stmt = $this->mysqli->prepare("INSERT INTO authors (LibraryItemID, AuthorFirstName, AuthorMiddleName, AuthorLastName)
+        VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $library_item_id, $first_name, $middle_name, $last_name);
+        $stmt->execute();
+        
         if ($stmt->affected_rows == 1) {
             return true;
         } else {
