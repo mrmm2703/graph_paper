@@ -54,7 +54,7 @@ if ($db_con->connect()) {
         if ($lib_items == 0) {
             echo "No references found";
         } else {
-            echo "<table><tr><th>Type</th><th>Authors</th><th>Year</th><th>Title</th><th>Source</th><th>Added</th></tr>";
+            echo "<table><tr><th>Type</th><th>Authors</th><th>Year</th><th>Title</th><th>Source</th><th>Added</th><th>Delete</th></tr>";
             foreach ($lib_items as $ind => $row) {
                 $first_names = explode(",", $row["AuthorsFirstName"]);
                 $last_names = explode(",", $row["AuthorsLastName"]);
@@ -66,7 +66,6 @@ if ($db_con->connect()) {
                         $authors_str = $authors_str . ", ";
                     }
                 }
-
                 echo "<tr>";
                 echo "<td>" . $row["SourceType"] . "</td>";
                 echo "<td>" . $authors_str . "</td>";
@@ -74,6 +73,7 @@ if ($db_con->connect()) {
                 echo "<td>" . $row["SourceTitle"] . "</td>";
                 echo "<td>" . $row["Publisher"] . "</td>";
                 echo "<td>" . $row["DateCreated"] . "</td>";
+                echo "<td style='text-align: center;'><a href='delete_reference.php?project_name=" . $_GET["project_name"] . " &project_id=" . $_GET["project_id"] . "&library_item_id=" . $row["LibraryItemID"] . "'>X</a></td>";
                 echo "</tr>";
             }
             echo "</table>";

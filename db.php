@@ -313,5 +313,17 @@ class DatabaseConnection {
             return false;
         }
     }
+
+    public function deleteLibraryItem($library_item_id) {
+        $stmt = $this->mysqli->prepare("DELETE FROM library_items WHERE LibraryItemID = ?");
+        $stmt->bind_param("i", $library_item_id);
+        $stmt->execute();
+
+        if ($stmt->affected_rows == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 ?>
