@@ -194,7 +194,7 @@ class DatabaseConnection {
     public function getLibraryItemsByProject($project_id) {
         $stmt = $this->mysqli->prepare("SELECT library_items.LibraryItemID, (SELECT GROUP_CONCAT(authors.AuthorFirstName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsFirstName, 
         (SELECT GROUP_CONCAT(authors.AuthorLastName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsLastName, YEAR(library_items.PublishedDate) AS PublishedYear, 
-        library_items.SourceTitle, websites.Publisher, library_items.DateCreated
+        library_items.SourceTitle, websites.Publisher, library_items.DateCreated, 'Website' AS SourceType
         FROM websites
         INNER JOIN library_items
         ON library_items.LibraryItemID=websites.LibraryItemID
@@ -204,7 +204,7 @@ class DatabaseConnection {
         UNION
         SELECT library_items.LibraryItemID, (SELECT GROUP_CONCAT(authors.AuthorFirstName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsFirstName, 
         (SELECT GROUP_CONCAT(authors.AuthorLastName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsLastName, YEAR(library_items.PublishedDate) AS PublishedYear, 
-        library_items.SourceTitle, books.Publisher, library_items.DateCreated
+        library_items.SourceTitle, books.Publisher, library_items.DateCreated, 'Book' AS SourceType
         FROM books
         INNER JOIN library_items
         ON library_items.LibraryItemID=books.LibraryItemID
@@ -214,7 +214,7 @@ class DatabaseConnection {
         UNION
         SELECT library_items.LibraryItemID, (SELECT GROUP_CONCAT(authors.AuthorFirstName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsFirstName, 
         (SELECT GROUP_CONCAT(authors.AuthorLastName) FROM authors WHERE authors.LibraryItemID=library_items.LibraryItemID) AS AuthorsLastName, YEAR(library_items.PublishedDate) AS PublishedYear, 
-        library_items.SourceTitle, '', library_items.DateCreated
+        library_items.SourceTitle, '', library_items.DateCreated, 'Journal' AS SourceType
         FROM journals
         INNER JOIN library_items
         ON library_items.LibraryItemID=journals.LibraryItemID
@@ -229,6 +229,45 @@ class DatabaseConnection {
             return $result->fetch_all(MYSQLI_ASSOC);
         } else {
             return 0;
+        }
+    }
+
+
+    public function insertNewWebsite($project_id, $title, $summary, $published_date, $publisher, $website_title, $url, $accessed_date) {
+        var_dump($accessed_date);
+        if ($accessed_date == "") {
+            $accessed_date = null;
+        }
+        $library_item_id = $this->insertNewLibraryItem($project_id, $title, $summary, $published_date);
+        if ($library_item_id == false) {
+            return false;
+        }
+        $stmt = $this->mysqli->prepare("INSERT INTO websites (LibraryItemID, WebsiteTitle, Publisher, URL, AccessedDate)
+        VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("issss", $library_item_id, $website_title, $publisher, $url, $accessed_date);
+        $stmt->execute();
+        
+        if ($stmt->affected_rows == 1) {
+            return $library_item_id;
+        } else {
+            return false;
+        }
+    }
+
+    public function insertNewJournal($project_id, $title, $summary, $published_date, $journal_title, $doi, $start_page, $end_page) {
+        $library_item_id = $this->insertNewLibraryItem($project_id, $title, $summary, $published_date);
+        if ($library_item_id == false) {
+            return false;
+        }
+        $stmt = $this->mysqli->prepare("INSERT INTO journals (LibraryItemID, JournalTitle, DOI, StartPage, EndPage)
+        VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("issii", $library_item_id, $journal_title, $doi, $start_page, $end_page);
+        $stmt->execute();
+        
+        if ($stmt->affected_rows == 1) {
+            return $library_item_id;
+        } else {
+            return false;
         }
     }
 

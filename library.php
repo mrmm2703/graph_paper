@@ -54,7 +54,7 @@ if ($db_con->connect()) {
         if ($lib_items == 0) {
             echo "No references found";
         } else {
-            echo "<table><tr><th>Authors</th><th>Year</th><th>Title</th><th>Source</th><th>Added</th></tr>";
+            echo "<table><tr><th>Type</th><th>Authors</th><th>Year</th><th>Title</th><th>Source</th><th>Added</th></tr>";
             foreach ($lib_items as $ind => $row) {
                 $first_names = explode(",", $row["AuthorsFirstName"]);
                 $last_names = explode(",", $row["AuthorsLastName"]);
@@ -68,6 +68,7 @@ if ($db_con->connect()) {
                 }
 
                 echo "<tr>";
+                echo "<td>" . $row["SourceType"] . "</td>";
                 echo "<td>" . $authors_str . "</td>";
                 echo "<td>" . $row["PublishedYear"] . "</td>";
                 echo "<td>" . $row["SourceTitle"] . "</td>";
@@ -83,7 +84,8 @@ if ($db_con->connect()) {
         <br><br>
         <ul>
             <li><a href="new_book.php?project_name=<?php echo $_GET["project_name"] ?>&project_id=<?php echo $_GET["project_id"] ?>">New book reference</a></li>
-        </ul>
+            <li><a href="new_website.php?project_name=<?php echo $_GET["project_name"] ?>&project_id=<?php echo $_GET["project_id"] ?>">New website reference</a></li>
+            <li><a href="new_journal.php?project_name=<?php echo $_GET["project_name"] ?>&project_id=<?php echo $_GET["project_id"] ?>">New journal reference</a></li>        </ul>
         <a href="dashboard.php">Back to dashboard</a>
     </body>
 </html>
