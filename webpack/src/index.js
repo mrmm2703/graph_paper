@@ -167,6 +167,34 @@ fetch('/graph_paper/graphs/1.json')
         cells.push(graph.createNode(item))
       }
     })
+    // cells.push(graph.createNode({
+    //   "shape": "reference",
+    //   "library_item_id": 9,
+    //   "position": {
+    //     "x": 300,
+    //     "y": 40
+    //   }
+    // }))
     graph.resetCells(cells)
     graph.zoomToFit({ padding: 10, maxScale: 1 })
   })
+
+
+var reference_picker = document.getElementById("reference_picker")
+for (var id in lib_items) {
+    var option = document.createElement("option");
+    option.value = lib_items[id].library_item_id;
+    option.innerHTML = lib_items[id].source_title + " (" + lib_items[id].published_year + ")";
+    reference_picker.appendChild(option);
+}
+
+document.getElementById("insert-btn").onclick = () => {
+  graph.addNode({
+    "shape": "reference",
+    "library_item_id": reference_picker.value,
+    "position": {
+      "x": 300,
+      "y": 40
+    }
+  })
+}

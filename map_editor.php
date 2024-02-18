@@ -32,6 +32,10 @@ if ($db_con->connect()) {
     </head>
     <body>
         <h1>This is a test</h1>
+        <select id="reference_picker"></select>
+        <button id="insert-btn">Insert</button>
+
+        </select>
         
         <div style="width: 100%; height: 100%;" id='container'></div>
     </body>
