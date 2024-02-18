@@ -1,0 +1,27 @@
+[
+  {
+    "id": "1",
+    "shape": "reference",
+    "library_item_id": 9,
+    "position": {
+      "x": 300,
+      "y": 40
+    }
+  },
+  {
+    "id": "2",
+    "shape": "reference",
+    "library_item_id": 15,
+    "position": {
+      "x": 300,
+      "y": 200
+    }
+  },
+  {
+    "id": "3",
+    "shape": "composition",
+    "source": "1",
+    "target": "2",
+    "label": "relates to"
+  }
+]
