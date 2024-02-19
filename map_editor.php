@@ -34,6 +34,8 @@ if ($db_con->connect()) {
         <h1>This is a test</h1>
         <select id="reference_picker"></select>
         <button id="insert-btn">Insert</button>
+        <br><br>
+        <button id="link-btn">Create link</button>
 
         </select>
         

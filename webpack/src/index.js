@@ -120,9 +120,6 @@ Graph.registerEdge(
     'composition',
     {
       inherit: 'edge',
-      router: {
-        name: 'metro'
-      },
       attrs: {
         line: {
           strokeWidth: 1,
@@ -147,6 +144,9 @@ Graph.registerEdge(
 
 const graph = new Graph({
   container: document.getElementById('container'),
+  connecting: {
+    router: 'metro'
+  }
 })
 
 fetch('/graph_paper/graphs/1.json')
@@ -198,3 +198,37 @@ document.getElementById("insert-btn").onclick = () => {
     }
   })
 }
+
+var select1 = null;
+var select2 = null;
+var linkText = "";
+var isSelecting = false;
+document.getElementById("link-btn").onclick = () => {
+  linkText = prompt("Enter link description (leave empty for none)")
+  isSelecting = true;
+}
+
+graph.on('node:click', ({e, x, y, node, view}) => {
+  console.log(node);
+  if (isSelecting) {
+    if (select1 == null) {
+      select1 = node.id;
+    } else if (select2 == null) {
+      select2 = node.id;
+      console.log(linkText);
+      graph.addEdge({
+        "shape": "composition",
+        "source": select1,
+        "target": select2,
+        "label": linkText,
+      });
+      isSelecting = false;
+      select1 = null;
+      select2 = null;
+    }
+  }
+})
+
+graph.on('edge:click', ({e, x, y, edge, view}) => {
+  console.log(edge);
+})
