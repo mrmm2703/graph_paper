@@ -14,6 +14,10 @@ if (!isset($_GET["project_name"])) {
     header("Location: dashboard.php");
 }
 
+if (!isset($_GET["map_id"])) {
+    header("Location: dashboard.php");
+}
+
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
@@ -22,6 +26,8 @@ require_once "db.php";
 $db_con = new DatabaseConnection();
 if ($db_con->connect()) {
     $lib_items = $db_con->getLibraryItemsByProject($_GET["project_id"]);
+    $map_data = $db_con->getMapData($_GET["map_id"])["MapData"];
+    echo "<script>var db_map_data = `" . $map_data . "`</script>";
 }
 
 ?>
@@ -29,13 +35,18 @@ if ($db_con->connect()) {
 <html>
     <head>
         <title>Test</title>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        
     </head>
     <body>
         <h1>This is a test</h1>
         <select id="reference_picker"></select>
         <button id="insert-btn">Insert</button>
+        <button id="save-btn">Save</button>
         <br><br>
         <button id="link-btn">Create link</button>
+        <br><br>
+        <a href="dashboard.php"><button id="link-btn">Back</button></a>
 
         </select>
         
@@ -84,3 +95,10 @@ echo $js_list;
 </script>
 
 <script src="webpack/dist/main.js"></script>
+
+<script>
+              const searchParams = new URLSearchParams(window.location.search)
+              if (searchParams.has("msg")) {
+                alert(searchParams.get("msg"))
+              }
+        </script>

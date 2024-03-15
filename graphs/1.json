@@ -6,6 +6,9 @@
     "position": {
       "x": 300,
       "y": 40
+    },
+    "attrs": {
+      "library_item_id": 9
     }
   },
   {
@@ -15,11 +18,14 @@
     "position": {
       "x": 300,
       "y": 200
+    },
+    "attrs": {
+      "library_item_id": 15
     }
   },
   {
     "id": "3",
-    "shape": "composition",
+    "shape": "arrow",
     "source": "1",
     "target": "2",
     "label": "relates to"

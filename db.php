@@ -325,5 +325,31 @@ class DatabaseConnection {
             return false;
         }
     }
+
+    public function updateMapData($map_id, $map_data) {
+        $stmt = $this->mysqli->prepare("UPDATE maps SET MapData=?, LastModified=CURRENT_TIME() WHERE MapID=?");
+        $stmt->bind_param("si", $map_data, $map_id);
+        $stmt->execute();
+
+        if ($stmt->affected_rows == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function getMapData($map_id) {
+        $stmt = $this->mysqli->prepare("SELECT MapData FROM maps WHERE MapID=?");
+        $stmt->bind_param("i", $map_id);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+        if ($result->num_rows == 1) {
+            $row = $result->fetch_assoc();
+            return $row;
+        } else {
+            return false;
+        }
+    }
 }
 ?>

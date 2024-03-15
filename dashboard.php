@@ -47,7 +47,7 @@ if ($db_con->connect()) {
                     if (isset($all_rows[$project_id])) {
                         echo "<ul>";
                         foreach ($all_rows[$project_id] as $map_proj_id => $map) {
-                            echo "<li>" . $map["MapName"] . "<br>Last modified: " . $map["MapLastModified"] . "</li>";
+                            echo "<li><a href='map_editor.php?project_id=" . $project_id . "&project_name=" . $project_name . "&map_id=" . $map["MapID"] . "'>" . $map["MapName"] . "</a><br>Last modified: " . $map["MapLastModified"] . "</li>";
                         }
                         echo "</ul>";
                     } else {

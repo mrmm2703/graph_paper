@@ -69,15 +69,19 @@ Graph.registerNode(
         fill: 'black',
         fontSize: 10,
       },
-      'library_item_id': 0,
     },
     propHooks(meta) {
       const { library_item_id, ...others } = meta
+
+      console.log("otehrs")
+      console.log(others)
+      console.log(meta)
 
       if (!(library_item_id)) {
         return meta
       }
 
+      
       const rects = [
         { type: 'name', text: [
           lib_items[library_item_id].source_title,
@@ -117,18 +121,12 @@ Graph.registerNode(
 
 
 Graph.registerEdge(
-    'composition',
+    'arrow',
     {
       inherit: 'edge',
       attrs: {
         line: {
           strokeWidth: 1,
-          sourceMarker: {
-            name: 'path',
-            d: 'M 30 10 L 20 16 L 10 10 L 20 4 z',
-            fill: 'black',
-            offsetX: -10,
-          },
           targetMarker: {
             name: 'path',
             d: 'M 6 10 L 18 4 C 14.3333 6 10.6667 8 7 10 L 18 16 z',
@@ -149,16 +147,11 @@ const graph = new Graph({
   }
 })
 
-fetch('/graph_paper/graphs/1.json')
-  .then((response) => response.json())
-  .then((data) => {
+function load_map(data) {
+  console.log(data)
     const cells = []
     const edgeShapes = [
-      'extends',
-      'composition',
-      'implement',
-      'aggregation',
-      'association',
+      'arrow'
     ]
     data.forEach(item => {
       if (edgeShapes.includes(item.shape)) {
@@ -177,8 +170,12 @@ fetch('/graph_paper/graphs/1.json')
     // }))
     graph.resetCells(cells)
     graph.zoomToFit({ padding: 10, maxScale: 1 })
-  })
+}
 
+console.log(db_map_data)
+if (db_map_data != "") {
+  load_map(JSON.parse(db_map_data))
+}
 
 var reference_picker = document.getElementById("reference_picker")
 for (var id in lib_items) {
@@ -195,8 +192,27 @@ document.getElementById("insert-btn").onclick = () => {
     "position": {
       "x": 300,
       "y": 40
+    },
+    "attrs": {
+      "library_item_id": reference_picker.value
     }
   })
+}
+
+document.getElementById("save-btn").onclick = () => {
+  const searchParams = new URLSearchParams(window.location.search)
+
+  let map_str = JSON.stringify(get_map_json())
+  console.log(map_str)
+  var url = 'save_map.php';
+  var form = $("<form action='" + url + "' method='post'>" +
+    "<input type='text' name='map_data' value='" + map_str + "' />" +
+    "<input type='text' name='map_id' value='" + searchParams.get('map_id') + "' />" +
+    "<input type='text' name='project_name' value='" + searchParams.get('project_name') + "' />" +
+    "<input type='text' name='project_id' value='" + searchParams.get('project_id') + "' />" +
+    "</form>");
+  $('body').append(form);
+  form.submit();
 }
 
 var select1 = null;
@@ -217,7 +233,7 @@ graph.on('node:click', ({e, x, y, node, view}) => {
       select2 = node.id;
       console.log(linkText);
       graph.addEdge({
-        "shape": "composition",
+        "shape": "arrow",
         "source": select1,
         "target": select2,
         "label": linkText,
@@ -232,3 +248,35 @@ graph.on('node:click', ({e, x, y, node, view}) => {
 graph.on('edge:click', ({e, x, y, edge, view}) => {
   console.log(edge);
 })
+
+console.log(graph)
+
+function get_map_json() {
+  let save_obj = []
+  graph.getNodes().forEach(node => {
+    let cur_node = {
+      id: node.id,
+      shape: node.shape,
+      library_item_id: node.getAttrByPath("library_item_id"),
+      position: node.getPosition(),
+      attrs: {
+        library_item_id: node.getAttrByPath("library_item_id"),
+      }
+    }
+    save_obj.push(cur_node)
+  })
+
+  graph.getEdges().forEach(edge => { 
+    console.log(edge)
+    let cur_edge = {
+      id: edge.id,
+      shape: edge.shape,
+      source: edge.getSourceCellId(),
+      target: edge.getTargetCellId(),
+      label: (edge.getLabels().length > 0 ? edge.getLabelAt(0).attrs.label.text : "")
+    }
+    save_obj.push(cur_edge)
+  })
+  console.log(save_obj)
+  return save_obj
+}
